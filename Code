@@ -1,0 +1,77 @@
+package me.alpha.client.modules;
+
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
+import net.minecraft.init.Blocks;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
+
+public class ESP {
+    @Collect
+    public void onChunkLoad(ChunkLoadEvent chunkLoadEvent) {
+        final WorldClient world = Minecraft.getMinecraft().theWorld;
+ 
+        final int chunkMinX = chunkLoadEvent.getMinX();
+        final int chunkMinZ = chunkLoadEvent.getMinZ();
+ 
+        for (int x = chunkMinX; x < chunkMinX + 16; x++) {
+            for (int z = chunkMinZ; z < chunkMinZ + 16; z++) {
+                for (int y = 3; y < 160; y++) {
+ 
+                    BlockPos blockPos = new BlockPos(x, y, z);
+                    IBlockState blockState = world.getBlockState(blockPos);
+ 
+                    if (blockState.getBlock() == Blocks.AIR && checkHole(blockPos, blockPos)) {
+ 
+                        //add to list
+ 
+                    }
+                }
+            }
+        }
+    }
+ 
+    /**
+     * Small example checking for a 2x2 hole with all positions being on the same Y level
+     * ------------------------------------
+     * Uses recursion to check the block to the right of the current position until
+     * it determines that the position is a hole.
+     *
+     * @param startPos The starting position, used to determine when the loop should stop and return
+     * @param currentPos The current position in the recursion loop or whatever its called
+     * @return Whether or not a hole is found from the given start position
+     */
+    private boolean checkHole(HoleType holeType, BlockPos startPos, BlockPos currentPos) {
+        //Technically we don't need this null check since if its null it'll return false
+        //since it skips the if statements but it saves a bit of memory to return early so it doesn't
+        //create more block states just to return false anyway
+        if (holeType == null)
+            return false;
+ 
+        final WorldClient world = Minecraft.getMinecraft().theWorld;
+        final IBlockState expandedState = world.getBlockState(currentPos);
+ 
+        final IBlockState aboveState = world.getBlockState(currentPos.offset(EnumFacing.UP));
+        final IBlockState belowState = world.getBlockState(currentPos.offset(EnumFacing.DOWN));
+ 
+ 
+        //Checking for a 1x1x2 hole
+        if (holeType == HoleType.X1Y2Z1) {
+            return expandedState.getBlock() == Blocks.AIR
+                    && (aboveState.getBlock() == Blocks.AIR || belowState.getBlock() == Blocks.AIR);
+        }
+ 
+ 
+        //Checking for a 1x1x1 hole
+        if (holeType == HoleType.X1Y1Z1) {
+            return currentPos.offset(EnumFacing.EAST) != startPos
+                    || (expandedState.getBlock() == Blocks.AIR && checkHole(holeType, startPos, currentPos.offset(EnumFacing.EAST)));
+        }
+ 
+        return false;
+    }
+ 
+    private enum HoleType {
+        X1Y2Z1, X1Y1Z1
+    }
+}
