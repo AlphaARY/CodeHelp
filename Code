@@ -2,6 +2,7 @@ package me.alpha.client.modules;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -9,7 +10,7 @@ import net.minecraft.util.math.BlockPos;
 public class ESP {
     @Collect
     public void onChunkLoad(ChunkLoadEvent chunkLoadEvent) {
-        final WorldClient world = Minecraft.getMinecraft().theWorld;
+        final WorldClient world = Minecraft.getMinecraft().world;
  
         final int chunkMinX = chunkLoadEvent.getMinX();
         final int chunkMinZ = chunkLoadEvent.getMinZ();
@@ -21,7 +22,7 @@ public class ESP {
                     BlockPos blockPos = new BlockPos(x, y, z);
                     IBlockState blockState = world.getBlockState(blockPos);
  
-                    if (blockState.getBlock() == Blocks.AIR && checkHole(blockPos, blockPos)) {
+                    if (blockState.getBlock() == Blocks.AIR && checkHole(null, blockPos, blockPos)) {
  
                         //add to list
  
@@ -48,7 +49,7 @@ public class ESP {
         if (holeType == null)
             return false;
  
-        final WorldClient world = Minecraft.getMinecraft().theWorld;
+        final WorldClient world = Minecraft.getMinecraft().world;
         final IBlockState expandedState = world.getBlockState(currentPos);
  
         final IBlockState aboveState = world.getBlockState(currentPos.offset(EnumFacing.UP));
